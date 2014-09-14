@@ -4,7 +4,7 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.ear
 
@@ -18,3 +18,5 @@ hs_err_pid*
 # JADE
 APDescription.txt
 MTPs-Main-Container.txt
+
+out/production
