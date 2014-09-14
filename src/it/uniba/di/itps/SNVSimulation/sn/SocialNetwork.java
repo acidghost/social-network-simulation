@@ -1,4 +1,4 @@
-package it.uniba.di.itps.SNVSimulation.models;
+package it.uniba.di.itps.SNVSimulation.sn;
 
 import it.uniba.di.itps.SNVSimulation.Simulation;
 import jade.core.AID;
@@ -11,8 +11,10 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.Logger;
-import org.jgraph.graph.DefaultEdge;
+import org.jgrapht.ext.JGraphModelAdapter;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.graph.ListenableUndirectedGraph;
 import org.jgrapht.graph.SimpleGraph;
 
 import java.util.ArrayList;
@@ -23,14 +25,17 @@ import java.util.Set;
  * Created by acidghost on 13/09/14.
  */
 public class SocialNetwork extends Agent {
-    private UndirectedGraph<AID, DefaultEdge> graph;
+    private ListenableUndirectedGraph<AID, DefaultEdge> graph;
     private static final AID SIMAGENT = new AID("SimAgent", AID.ISLOCALNAME);
 
     private Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+    private GraphGUI gui;
 
     @Override
     protected void setup() {
-        graph = new SimpleGraph<AID, DefaultEdge>(DefaultEdge.class);
+        graph = new ListenableUndirectedGraph<AID, DefaultEdge>(DefaultEdge.class);
+        gui = new GraphGUI(new JGraphModelAdapter<AID, DefaultEdge>(graph));
+        gui.setVisible(true);
 
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
@@ -62,6 +67,7 @@ public class SocialNetwork extends Agent {
             if(msg != null && mt.match(msg)) {
                 AID newAgent = new AID(msg.getContent(), AID.ISLOCALNAME);
                 graph.addVertex(newAgent);
+                gui.positionNode(newAgent);
                 logger.info("Added node...");
                 if(graph.vertexSet().size() == Simulation.N_AGENTS) {
                     ACLMessage message = new ACLMessage(ACLMessage.INFORM);

@@ -2,7 +2,7 @@ package it.uniba.di.itps.SNVSimulation;
 
 import it.uniba.di.itps.SNVSimulation.models.Interests;
 import it.uniba.di.itps.SNVSimulation.models.Person;
-import it.uniba.di.itps.SNVSimulation.models.SocialNetwork;
+import it.uniba.di.itps.SNVSimulation.sn.SocialNetwork;
 import it.uniba.di.itps.SNVSimulation.models.Trait;
 import jade.core.AID;
 import jade.core.Agent;
