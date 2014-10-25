@@ -1,6 +1,9 @@
 package it.uniba.di.itps.SNVSimulation.sn;
 
 import it.uniba.di.itps.SNVSimulation.Simulation;
+import it.uniba.di.itps.SNVSimulation.sn.graph.Graph;
+import it.uniba.di.itps.SNVSimulation.sn.graph.Node;
+import it.uniba.di.itps.SNVSimulation.sn.graph.PlainGraph;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -11,31 +14,21 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.Logger;
-import org.jgrapht.ext.JGraphModelAdapter;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.UndirectedGraph;
-import org.jgrapht.graph.ListenableUndirectedGraph;
-import org.jgrapht.graph.SimpleGraph;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by acidghost on 13/09/14.
  */
 public class SocialNetwork extends Agent {
-    private ListenableUndirectedGraph<AID, DefaultEdge> graph;
+    private Graph graph;
     private static final AID SIMAGENT = new AID("SimAgent", AID.ISLOCALNAME);
 
     private Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
-    private GraphGUI gui;
 
     @Override
     protected void setup() {
-        graph = new ListenableUndirectedGraph<AID, DefaultEdge>(DefaultEdge.class);
-        gui = new GraphGUI(new JGraphModelAdapter<AID, DefaultEdge>(graph));
-        gui.setVisible(true);
+        graph = new PlainGraph();
 
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
@@ -65,11 +58,10 @@ public class SocialNetwork extends Agent {
             MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchSender(SIMAGENT), MessageTemplate.MatchOntology("new-node"));
             ACLMessage msg = myAgent.receive(mt);
             if(msg != null && mt.match(msg)) {
-                AID newAgent = new AID(msg.getContent(), AID.ISLOCALNAME);
-                graph.addVertex(newAgent);
-                gui.positionNode(newAgent);
-                logger.info("Added node...");
-                if(graph.vertexSet().size() == Simulation.N_AGENTS) {
+                Node node = new Node(new AID(msg.getContent(), AID.ISLOCALNAME));
+                graph.addNode(node);
+                logger.info("Added node:\t" + node);
+                if(graph.getNodes().size() == Simulation.N_AGENTS) {
                     ACLMessage message = new ACLMessage(ACLMessage.INFORM);
                     message.setSender(getAID());
                     message.setOntology("can-add-connections");
@@ -93,7 +85,9 @@ public class SocialNetwork extends Agent {
             ACLMessage msg = myAgent.receive(mt);
             if(msg != null) {
                 String[] nodes = msg.getContent().split("#");
-                graph.addEdge(new AID(nodes[0], AID.ISLOCALNAME), new AID(nodes[1], AID.ISLOCALNAME));
+                Node node1 = new Node(new AID(nodes[0], AID.ISLOCALNAME));
+                Node node2 = new Node(new AID(nodes[1], AID.ISLOCALNAME));
+                graph.addEdge(node1, node2);
                 logger.info("Added connection...");
             } else {
                 block();
@@ -112,21 +106,13 @@ public class SocialNetwork extends Agent {
             ACLMessage msg = myAgent.receive(mt);
             if(msg != null) {
                 AID sender = msg.getSender();
-                List<AID> neighbors = new ArrayList<AID>();
+                List<Node> neighbors = graph.getNeighbors(new Node(sender));
                 try {
-                    Set<DefaultEdge> edges = graph.edgesOf(sender);
-                    for(DefaultEdge edge : edges) {
-                        AID a = graph.getEdgeSource(edge);
-                        if (a.equals(sender)) {
-                            a = graph.getEdgeTarget(edge);
-                        }
-                        neighbors.add(a);
-                    }
                     ACLMessage reply = msg.createReply();
                     reply.setConversationId(msg.getConversationId());
                     String content = "";
                     for(int i=0; i<neighbors.size(); i++) {
-                        content += neighbors.get(i).getLocalName();
+                        content += neighbors.get(i).getInfo().getLocalName();
                         if(i<neighbors.size()-1)
                             content += "#";
                     }

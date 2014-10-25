@@ -1,10 +1,8 @@
-package it.uniba.di.itps.SNVSimulation.sn;
+package it.uniba.di.itps.SNVSimulation.sn.graph;
 
-import jade.core.AID;
 import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
-import org.jgrapht.Graph;
 import org.jgrapht.ext.JGraphModelAdapter;
 import org.jgrapht.graph.DefaultEdge;
 
@@ -21,10 +19,10 @@ public class GraphGUI extends JFrame {
     private static final Color DEFAULT_BG_COLOR = Color.decode( "#cccccc" );
     private static final Dimension DEFAULT_SIZE = new Dimension( 800, 800 );
 
-    private JGraphModelAdapter<AID, DefaultEdge> adapter;
+    private JGraphModelAdapter<Node, DefaultEdge> adapter;
     private JGraph graph;
 
-    public GraphGUI(JGraphModelAdapter<AID, DefaultEdge> adapter) {
+    public GraphGUI(JGraphModelAdapter<Node, DefaultEdge> adapter) {
         this.adapter = adapter;
         graph = new JGraph(this.adapter);
         adjustDisplaySettings(graph);
@@ -39,7 +37,7 @@ public class GraphGUI extends JFrame {
         jg.setBackground( c );
     }
 
-    public void positionNode(AID node) {
+    public void positionNode(Node node) {
         DefaultGraphCell cell = adapter.getVertexCell(node);
         Map attr = cell.getAttributes();
         Rectangle2D b = GraphConstants.getBounds(attr);
